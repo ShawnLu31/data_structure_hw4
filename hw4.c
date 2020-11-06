@@ -31,12 +31,9 @@ int main(){
 	root->left = NULL;
 	root->right = NULL;
 	root->parent = NULL;
-	printf("add\n");
 	//input the rest of key, row 1 in input.txt
 	char ch;
-	while(1==1){
-	printf("add\n");
-		scanf("%c", &ch);
+	while(scanf("%c", &ch) != EOF){
 		if(ch == '\n')
 			break;
 		key = ch - '0';
@@ -45,17 +42,15 @@ int main(){
 		}
 	}
 	//delete the key, row 2 in input.txt
-	while(1==1){
-		scanf("%c", &ch);
+	while(scanf("%c", &ch) != EOF){
 		if(ch == '\n')
 			break;
 		key = ch - '0';
-		if(key >= 1 && key <= 100){
-			DeleteNode(root, key);
-		}
+		if(key >= 1 && key <= 100)
+		;	//DeleteNode(root, key);
 	}
 	//print result to output.txt
-	Print(root);	
+	Print(root);
 	return 0;
 }
 
