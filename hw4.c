@@ -12,8 +12,7 @@ struct Node{
 };
 
 void AddNode(Node *parent, int add_key);
-void DeleteNode(Node *parent, int del_key);
-Node* FindMin(Node *ptr);
+void DeleteNode(Node *delnode, int del_key);
 void Print(Node *ptr);
 
 int main(){
@@ -37,9 +36,8 @@ int main(){
 		if(ch == '\n')
 			break;
 		key = ch - '0';
-		if(key >= 1 && key <= 100){
+		if(key >= 1 && key <= 100)
 			AddNode(root, key);
-		}
 	}
 	//delete the key, row 2 in input.txt
 	while(scanf("%c", &ch) != EOF){
@@ -47,7 +45,7 @@ int main(){
 			break;
 		key = ch - '0';
 		if(key >= 1 && key <= 100)
-		;	//DeleteNode(root, key);
+			DeleteNode(root, key);
 	}
 	//print result to output.txt
 	Print(root);
@@ -104,73 +102,81 @@ void AddNode(Node *parent, int add_key){
 	}
 };
 
-void DeleteNode(Node *parent, int del_key){
-	if(parent)
+void DeleteNode(Node *delnode, int del_key){
+	if(delnode)
 	{
-		if(del_key == parent->value)
+		if(del_key == delnode->value)
 		{
-			Node *tpnode = (Node*)malloc(sizeof(Node));
-			tpnode = parent;
 			/* find the node to replace */
-			if(parent->left && parent->right)
+			if(delnode->left && delnode->right)
 			{/* two children */
-				Node *minnode = (Node*)malloc(sizeof(Node));
-				minnode = FindMin(parent->right);
+				/* find min node of right' sub tree */
+				Node *minnode;
+				for(minnode = delnode->right; minnode->left != NULL; minnode = minnode->left)
+					if(minnode->left == NULL)
+						break;
 				/* make connect to minnode */
-				minnode->parent->left = minnode->right;//cut old , minnode->right can exist or be NULL
-				minnode->parent = tpnode->parent;//to new parent
-				minnode->left = tpnode->left;
-				minnode->right = tpnode->right;
-				/*----------------------------*/
-				if(tpnode->value < tpnode->parent->value)
-					tpnode->parent->left = minnode;
-				else if(tpnode->value > tpnode->parent->value)
-					tpnode->parent->right = minnode;
-				free(tpnode);
-				free(minnode);
+				if(minnode->parent == delnode)
+				{
+					//min's parent is delnode == min is delnode's right child
+					minnode->parent = delnode->parent;//new parent
+					minnode->left = delnode->left;//take delnode's left
+					/* update delnode's children's parent*/
+					delnode->left->parent = minnode;
+				}	
+				else
+				{
+					//min's parent is not delnode == min is not delnode's right child
+					minnode->parent->left = minnode->right;//cut old , minnode->right can exist or be NULL
+					minnode->parent = delnode->parent;//new parent
+					minnode->left = delnode->left;//take delnode's left
+					minnode->right = delnode->right;//take delnode's right 
+					/* update delnode's children's parent*/
+					delnode->left->parent = minnode;
+					delnode->right->parent = minnode;
+				}
+				/* make the parent connect to minnode */
+				if(minnode->value < minnode->parent->value)
+					minnode->parent->left = minnode;
+				else if(minnode->value > minnode->parent->value)
+					minnode->parent->right = minnode;
+				free(delnode); 				
 			}
-			else if(parent->left && !parent->right)
+			else if(delnode->left && !delnode->right)
 			{/* only left child */
-				if(tpnode->value < tpnode->parent->value)
-					tpnode->parent->left = tpnode->left;
-				else if(tpnode->value > tpnode->parent->value)
-					tpnode->parent->right = tpnode->left;
-				free(tpnode);
+				if(delnode->value < delnode->parent->value)
+					delnode->parent->left = delnode->left;
+				else if(delnode->value > delnode->parent->value)
+					delnode->parent->right = delnode->left;
+				delnode->left = delnode->parent;
+				free(delnode);
 			}
-			else if(!parent->left && parent->right)
+			else if(!delnode->left && delnode->right)
 			{/* only right child */
-				if(tpnode->value < tpnode->parent->value)
-					tpnode->parent->left = tpnode->left;
-				else if(tpnode->value > tpnode->parent->value)
-					tpnode->parent->right = tpnode->left;
-				free(tpnode);
+				if(delnode->value < delnode->parent->value)
+					delnode->parent->left = delnode->right;
+				else if(delnode->value > delnode->parent->value)
+					delnode->parent->right = delnode->right;
+				delnode->right = delnode->parent;
+				free(delnode);
 			}
 			else
 			{/* leaf node */
-				if(tpnode->value < tpnode->parent->value)
-					tpnode->parent->left = NULL;
-				else if(tpnode->value > tpnode->parent->value)
-					tpnode->parent->right = NULL;
-				free(tpnode);
+				if(delnode->value < delnode->parent->value)
+					delnode->parent->left = NULL;
+				else if(delnode->value > delnode->parent->value)
+					delnode->parent->right = NULL;
+				free(delnode);
 			}
 		}
-		else if(del_key < parent->value)
+		else if(del_key < delnode->value)
 		{
-			DeleteNode(parent->left, del_key);
+			DeleteNode(delnode->left, del_key);
 		}
-		else if(del_key > parent->value)
+		else if(del_key > delnode->value)
 		{
-			DeleteNode(parent->right, del_key);
+			DeleteNode(delnode->right, del_key);
 		}
-	}
-};
-Node* FindMin(Node *ptr){
-	if(ptr->left){
-		ptr = FindMin(ptr->left);
-		return ptr;
-	}
-	else{
-		return ptr;	
 	}
 };
 void Print(Node *ptr){
@@ -189,7 +195,7 @@ void Print(Node *ptr){
 		if(ptr)
 		{
 			//print the key value
-			printf("%d\n", ptr->value);
+			printf("%d", ptr->value);
 			//put ptr's children to queue
 			if(ptr->left)
 			{
@@ -205,6 +211,8 @@ void Print(Node *ptr){
 					queue[++rear] = ptr->right;
 				}
 			}
+			if(queue[front] != NULL)
+				printf("\n");
 		}
 		else
 			break;
