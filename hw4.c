@@ -5,14 +5,13 @@
 
 typedef struct Node Node;
 struct Node{
-	struct Node *parent;
 	struct Node *left;
 	int value;
 	struct Node *right;
 };
 
 void AddNode(Node *parent, int add_key);
-void DeleteNode(Node *delnode, int del_key);
+void DeleteNode(Node *parent, Node *delnode, int del_key);
 void Print(Node *ptr);
 
 int main(){
@@ -29,7 +28,6 @@ int main(){
 	root->value = key;
 	root->left = NULL;
 	root->right = NULL;
-	root->parent = NULL;
 	//input the rest of key, row 1 in input.txt
 	char ch;
 	while(scanf("%c", &ch) != EOF){
@@ -44,8 +42,49 @@ int main(){
 		if(ch == '\n')
 			break;
 		key = ch - '0';
-		if(key >= 1 && key <= 100)
-			DeleteNode(root, key);
+		if(key >= 1 && key <= 100){
+			if(key == root->value)
+			{/*delete root(delnode)*/
+				if(root->left && root->right)
+				{
+					Node *del = root;
+					Node *minnode = NULL, *minparent = NULL;//minnode's parent
+					for(minnode = root->right; minnode->left != NULL; minnode = minnode->left){
+						if(minnode->left == NULL)
+							break;
+						minparent = minnode;
+					}
+					if(minparent)
+						minparent->left = minnode->right;//cut, and min's right can exist or be null
+					/* take root's children */
+					minnode->left = root->left;
+					if(minnode == root->right)
+						minnode->right = NULL;
+					else
+						minnode->right = root->right;
+					root = minnode;
+					free(del);
+				}		
+				else if(root->left && !root->right)
+				{
+					Node *del = root;
+					root = root->left;
+					free(del);
+				}
+				else if(!root->left && root->right)
+				{
+					Node *del = root;
+					root = root->right;
+					free(del);
+				}
+				else
+					free(root);
+			}
+			else if(key < root->value)
+				DeleteNode(root, root->left, key);
+			else if(key > root->value)
+				DeleteNode(root, root->right, key);
+		}
 	}
 	//print result to output.txt
 	Print(root);
@@ -69,7 +108,6 @@ void AddNode(Node *parent, int add_key){
 				tpnode->value = add_key;
 				tpnode->left = NULL;
 				tpnode->right = NULL;
-				tpnode->parent = parent;
 				//add new *node to tree, the left of parent
 				parent->left = tpnode;
 			}
@@ -91,7 +129,6 @@ void AddNode(Node *parent, int add_key){
 				tpnode->value = add_key;
 				tpnode->left = NULL;
 				tpnode->right = NULL;
-				tpnode->parent = parent;
 				//add new *node to tree, the right of parent
 				parent->right = tpnode;
 			}
@@ -102,7 +139,7 @@ void AddNode(Node *parent, int add_key){
 	}
 };
 
-void DeleteNode(Node *delnode, int del_key){
+void DeleteNode(Node *parent, Node *delnode, int del_key){
 	if(delnode)
 	{
 		if(del_key == delnode->value)
@@ -111,71 +148,59 @@ void DeleteNode(Node *delnode, int del_key){
 			if(delnode->left && delnode->right)
 			{/* two children */
 				/* find min node of right' sub tree */
-				Node *minnode;
-				for(minnode = delnode->right; minnode->left != NULL; minnode = minnode->left)
+				Node *minnode = NULL, *minparent = NULL;//minnode's parent
+				for(minnode = delnode->right; minnode->left != NULL; minnode = minnode->left){
 					if(minnode->left == NULL)
 						break;
-				/* make connect to minnode */
-				if(minnode->parent == delnode)
-				{
-					//min's parent is delnode == min is delnode's right child
-					minnode->parent = delnode->parent;//new parent
-					minnode->left = delnode->left;//take delnode's left
-					/* update delnode's children's parent*/
-					delnode->left->parent = minnode;
-				}	
-				else
-				{
-					//min's parent is not delnode == min is not delnode's right child
-					minnode->parent->left = minnode->right;//cut old , minnode->right can exist or be NULL
-					minnode->parent = delnode->parent;//new parent
-					minnode->left = delnode->left;//take delnode's left
-					minnode->right = delnode->right;//take delnode's right 
-					/* update delnode's children's parent*/
-					delnode->left->parent = minnode;
-					delnode->right->parent = minnode;
+					minparent = minnode;
 				}
-				/* make the parent connect to minnode */
-				if(minnode->value < minnode->parent->value)
-					minnode->parent->left = minnode;
-				else if(minnode->value > minnode->parent->value)
-					minnode->parent->right = minnode;
+				if(minparent)
+					minparent->left = minnode->right;//cut, and min's right can exist or be null
+				/* take delnode's children */
+				minnode->left = delnode->left;
+				if(minnode == delnode->right)
+					minnode->right = NULL;
+				else
+					minnode->right = delnode->right;
+				/***************************/
+				if(minnode->value < parent->value)
+					parent->left = minnode;
+				else if(minnode->value > parent->value)
+					parent->right = minnode;
 				free(delnode); 				
 			}
 			else if(delnode->left && !delnode->right)
 			{/* only left child */
-				if(delnode->value < delnode->parent->value)
-					delnode->parent->left = delnode->left;
-				else if(delnode->value > delnode->parent->value)
-					delnode->parent->right = delnode->left;
-				delnode->left = delnode->parent;
+				if(delnode->value < parent->value)
+					parent->left = delnode->left;
+				else if(delnode->value > parent->value)
+					parent->right = delnode->left;
 				free(delnode);
 			}
 			else if(!delnode->left && delnode->right)
 			{/* only right child */
-				if(delnode->value < delnode->parent->value)
-					delnode->parent->left = delnode->right;
-				else if(delnode->value > delnode->parent->value)
-					delnode->parent->right = delnode->right;
-				delnode->right = delnode->parent;
+				if(delnode->value < parent->value)
+					parent->left = delnode->right;
+				else if(delnode->value > parent->value)
+					parent->right = delnode->right;
 				free(delnode);
 			}
 			else
 			{/* leaf node */
-				if(delnode->value < delnode->parent->value)
-					delnode->parent->left = NULL;
-				else if(delnode->value > delnode->parent->value)
-					delnode->parent->right = NULL;
+				if(delnode->value < parent->value)
+					parent->left = NULL;
+				else if(delnode->value > parent->value)
+					parent->right = NULL;
 				free(delnode);
 			}
 		}
 		else if(del_key < delnode->value)
 		{
-			DeleteNode(delnode->left, del_key);
+			DeleteNode(delnode, delnode->left, del_key);
 		}
 		else if(del_key > delnode->value)
 		{
-			DeleteNode(delnode->right, del_key);
+			DeleteNode(delnode, delnode->right, del_key);
 		}
 	}
 };
