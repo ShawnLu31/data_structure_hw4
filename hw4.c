@@ -33,7 +33,10 @@ int main(){
 	while(scanf("%c", &ch) != EOF){
 		if(ch == '\n')
 			break;
-		key = ch - '0';
+		if(ch != ' ')
+			key = ch - '0';
+		else
+			scanf("%d", &key);
 		if(key >= 1 && key <= 100)
 			AddNode(root, key);
 	}
@@ -41,7 +44,10 @@ int main(){
 	while(scanf("%c", &ch) != EOF){
 		if(ch == '\n')
 			break;
-		key = ch - '0';
+		if(ch != ' ')
+			key = ch - '0';
+		else
+			scanf("%d", &key);
 		if(key >= 1 && key <= 100){
 			if(key == root->value)
 			{/*delete root(delnode)*/
