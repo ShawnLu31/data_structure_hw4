@@ -9,7 +9,7 @@
 ## Program structure
 ![image](https://github.com/ShawnLu31/data_structure_hw4/blob/main/structure.png)
 ## Program design
-  * node structure:
+node structure:
   	struct Node{
     		struct Node *left; //pointer to left child
 		int value;
