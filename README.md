@@ -9,12 +9,13 @@
 ## Program structure
 ![image](https://github.com/ShawnLu31/data_structure_hw4/blob/main/structure.png)
 ## Program design
-node structure:
-  	struct Node{
-    		struct Node *left; //pointer to left child
-		int value;
-		struct Node *right; //pointer to right child
-	};
+	node structure:  
+	typedef struct Node Node;  
+	struct Node{  
+		struct Node *left; //pointer to left child  
+		int value;  
+		struct Node *right; //pointer to right child  
+	};  
     
 ## Program functions
 1. void AddNode(Node *parent, int add_key);
