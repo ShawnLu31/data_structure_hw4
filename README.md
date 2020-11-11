@@ -59,7 +59,7 @@ struct Node{
 		* parameter :
 			* minnode : the node has the smallest key of th delnode's right subtree.
 			* minparent : parent of the minnode.  
-		*　e.g.
+		* e.g.
 		![image](https://github.com/ShawnLu31/data_structure_hw4/blob/main/two1.JPG)
 		![image](https://github.com/ShawnLu31/data_structure_hw4/blob/main/two2.JPG)
 3. void Print(Node *ptr);
